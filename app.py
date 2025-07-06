@@ -32,24 +32,7 @@ def load_user(user_id):
 # ------- CREATE TABLES & ADMIN IF NONE -------
 with app.app_context():
     db.create_all()
-    if not Therapist.query.filter_by(username="Kelvin").first():
-        hashed_pw = generate_password_hash("Thanh123!")
-        admin = Therapist(
-            username="Kelvin",
-            password=hashed_pw,
-            first_name="Kelvin123!",
-            last_name="Lam",
-            credentials="PT",
-            email="admin@example.com",
-            phone="555-555-5555",
-            availability="M-F",
-            npi="0000000000",
-            pt_license="LICENSE123",
-            is_admin=True,  
-        )
-        db.session.add(admin)
-        db.session.commit()
-
+    
 def parse_dob(dob_str):
     if not dob_str:
         return None
@@ -91,10 +74,6 @@ def logout():
 @app.route('/forgot-password')
 def forgot_password():
     return render_template('forgot_password.html')
-
-@app.before_request
-def create_tables():
-    db.create_all()
     
 #---- Calendar ----
 
