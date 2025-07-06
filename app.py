@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from models import db, Patient, Visit, Attachment, CalendarEvent
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 import os
 from datetime import datetime
@@ -13,6 +15,85 @@ app.config.from_object(Config)
 db.init_app(app)
 migrate = Migrate(app, db)
 app.register_blueprint(calendar_bp)
+
+#======= OPEN AI=======
+OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_KEY) if OPENAI_KEY else None
+MODEL = "gpt-4o-mini"
+
+# ====== LOGIN MANAGER ======
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Therapist.query.get(int(user_id))
+
+# ====== CREATE TABLES & ADMIN IF NONE ======
+with app.app_context():
+    db.create_all()
+    # Only run this once! Add a default admin user if none exists:
+    if not Therapist.query.filter_by(username="admin").first():
+        hashed_pw = generate_password_hash("admin123")
+        admin = Therapist(
+            username="admin",
+            password=hashed_pw,
+            first_name="Admin",
+            last_name="User",
+            credentials="PT",
+            email="admin@example.com",
+            phone="555-555-5555",
+            availability="M-F",
+            npi="0000000000",
+            pt_license="LICENSE123",
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("Default admin user created: username=admin, password=admin123")
+
+def parse_dob(dob_str):
+    """
+    Parse DOB string in MM-DD-YYYY or MM/DD/YYYY format.
+    Returns a date object or None if invalid.
+    """
+    if not dob_str:
+        return None
+    for fmt in ("%m-%d-%Y", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(dob_str, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+# ====== ROUTES ======
+
+@app.route('/')
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = Therapist.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        else:
+            flash("Invalid username or password", "danger")
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+# --- Forgot-password, reset-password, register, dashboard routes ---
 
 # --- Create DB (local testing) ---
 @app.before_request
@@ -83,6 +164,12 @@ def visit_detail(visit_id):
     visit = Visit.query.get_or_404(visit_id)
     return render_template('visit_detail.html', visit=visit)
 
+# --- PT Builder ---
+@app.route('/pt_builder')
+@login_required
+def pt_builder():
+    return render_template('pt_builder.html')
+    
 # --- File Upload (Attachment) ---
 @app.route('/patients/<int:patient_id>/attachments/upload', methods=['POST'])
 def upload_attachment(patient_id):
