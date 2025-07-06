@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
-from models import db, Patient, Visit, Attachment  # Import from models package!
+from models import db, Patient, Visit, Attachment, CalendarEvent
 from config import Config
 import os
 from datetime import datetime

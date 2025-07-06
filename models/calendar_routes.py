@@ -1,8 +1,6 @@
-# calendar_routes.py
-
 from flask import Blueprint, jsonify, request
 from models.calendar_event import CalendarEvent
-from app import db
+from . import db
 from datetime import datetime
 
 calendar_bp = Blueprint('calendar', __name__)

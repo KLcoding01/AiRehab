@@ -1,6 +1,4 @@
-# models/calendar_event.py
-
-from app import db
+from . import db
 
 class CalendarEvent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
