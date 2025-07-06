@@ -67,7 +67,7 @@ def parse_dob(dob_str):
 @app.route('/home')
 @login_required
 def index():
-    return redirect(url_for('dashboard'))  # you might want to define a dashboard route
+    return redirect(url_for('dashboard.html'))  # you might want to define a dashboard route
     
 # --- Login, Forgot Password ----
 @app.route('/login', methods=['GET', 'POST'])
