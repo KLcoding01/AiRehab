@@ -1,6 +1,9 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import os
+from .patient import Patient
+from .visit import Visit
+from .attachment import Attachment
 
 app = Flask(__name__)
 
