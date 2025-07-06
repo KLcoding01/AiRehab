@@ -1,6 +1,8 @@
+# calendar_routes.py
+
 from flask import Blueprint, jsonify, request
 from models.calendar_event import CalendarEvent
-from . import db
+from models import db
 from datetime import datetime
 
 calendar_bp = Blueprint('calendar', __name__)
@@ -46,11 +48,4 @@ def edit_event(event_id):
     event.therapist_id = data.get('therapist_id')
     event.description = data.get('description')
     db.session.commit()
-    return jsonify({'status': 'success'})
-
-@calendar_bp.route('/api/events/<int:event_id>', methods=['DELETE'])
-def delete_event(event_id):
-    event = CalendarEvent.query.get(event_id)
-    db.session.delete(event)
-    db.session.commit()
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success
