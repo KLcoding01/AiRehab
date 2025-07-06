@@ -50,7 +50,13 @@ def add_patient():
         flash('Patient added!')
         return redirect(url_for('index'))
     return render_template('patient_form.html')
-
+    
+# --- Patient List---
+@app.route('/patients')
+def patient_list():
+    patients = Patient.query.all()
+    return render_template('patient_list.html', patients=patients)
+    
 # --- Patient Detail ---
 @app.route('/patients/<int:patient_id>')
 def patient_detail(patient_id):
