@@ -1,3 +1,8 @@
+import flask
+print("==== FLASK VERSION IS:", flask.__version__, "====")
+print("==== FLASK MODULE FILE:", flask.__file__, "====")
+print("==== FLASK OBJECT DIR:", dir(flask.Flask), "====")
+
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from models.patient import db, Patient
 from models.visit import Visit
