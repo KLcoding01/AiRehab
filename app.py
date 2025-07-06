@@ -102,12 +102,6 @@ def logout():
 def create_tables():
     db.create_all()
 
-# --- Home / Patients List ---
-@app.route('/')
-def index():
-    patients = Patient.query.all()
-    return render_template('index.html', patients=patients)
-
 # --- Calendar Detail ---
 @app.route('/calendar')
 def calendar_view():
