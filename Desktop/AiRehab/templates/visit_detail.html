@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Visit on {{ visit.date }}</h2>
+<p>{{ visit.notes }}</p>
+<p><a href="{{ url_for('patient_detail', patient_id=visit.patient_id) }}">Back to patient</a></p>
+{% endblock %}

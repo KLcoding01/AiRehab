@@ -1,168 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Patient Details{% endblock %}
-
 {% block content %}
-<div class="container my-5">
-  <div class="card shadow rounded-4 p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        <h2 class="fw-bold mb-1">{{ patient.last_name }}, {{ patient.first_name }}</h2>
-        <div class="text-muted mb-2">DOB: {{ patient.dob }} | MRN: {{ patient.id }}</div>
-        <div><i class="bi bi-telephone"></i> {{ patient.phone or "N/A" }} &nbsp; | &nbsp; <i class="bi bi-geo-alt"></i> {{ patient.address or "N/A" }}</div>
-      </div>
-      <div>
-        <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-outline-primary me-2">
-          <i class="bi bi-pencil"></i> Edit
-        </a>
-        <a href="{{ url_for('add_visit', patient_id=patient.id) }}" class="btn btn-success me-2">
-          <i class="bi bi-calendar-plus"></i> New Visit
-        </a>
-        <a href="{{ url_for('upload_file', patient_id=patient.id) }}" class="btn btn-secondary">
-          <i class="bi bi-upload"></i> Upload File
-        </a>
-      </div>
-    </div>
-    <hr>
-    <div class="row">
-      <div class="col-md-4 mb-2">
-        <strong>Insurance:</strong> {{ patient.insurance_name or "N/A" }}
-      </div>
-      <div class="col-md-4 mb-2">
-        <strong>Physician:</strong> {{ patient.physician_name or "N/A" }}
-      </div>
-      <div class="col-md-4 mb-2">
-        <strong>Notes:</strong> {{ patient.notes or "N/A" }}
-      </div>
-    </div>
-  </div>
+<h2>{{ patient.first_name }} {{ patient.last_name }}</h2>
+<ul>
+    <li>DOB: {{ patient.date_of_birth }}</li>
+    <li>Email: {{ patient.email }}</li>
+    <li>Phone: {{ patient.phone }}</li>
+</ul>
 
-  <div class="card shadow rounded-4 p-4">
-    <ul class="nav nav-tabs mb-4" id="patientTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="visits-tab" data-bs-toggle="tab" data-bs-target="#visits" type="button" role="tab" aria-controls="visits" aria-selected="true">
-          <i class="bi bi-clipboard2-pulse"></i> Visits
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">
-          <i class="bi bi-paperclip"></i> Attachments
-        </button>
-      </li>
-      <!-- New Deleted Visits Tab Button -->
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="deleted-visits-tab" data-bs-toggle="tab" data-bs-target="#deleted-visits" type="button" role="tab" aria-controls="deleted-visits" aria-selected="false">
-          <i class="bi bi-trash"></i> Deleted Visits
-        </button>
-      </li>
-    </ul>
-    <div class="tab-content" id="patientTabsContent">
-      <!-- Visits Tab -->
-      <div class="tab-pane fade show active" id="visits" role="tabpanel" aria-labelledby="visits-tab">
-        {% if visits and visits|length > 0 %}
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Therapist</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for visit in visits %}
-              <tr>
-                <td>{{ visit.visit_date.strftime('%Y-%m-%d %I:%M %p') if visit.visit_date else "N/A" }}</td>
-                <td>{{ visit.visit_type or 'Eval' }}</td>
-                <td>
-                  <span class="badge
-                    {% if visit.status == 'Completed' %}bg-success
-                    {% elif visit.status == 'Scheduled' %}bg-primary
-                    {% elif visit.status == 'Cancelled' %}bg-danger
-                    {% else %}bg-secondary{% endif %}">
-                    {{ visit.status }}
-                  </span>
-                </td>
-                <td>{{ visit.therapist.last_name }}, {{ visit.therapist.first_name }}</td>
-                <td>
-                  <a href="{{ url_for('visit_detail', visit_id=visit.id) }}" class="btn btn-outline-info btn-sm">
-                    <i class="bi bi-eye"></i> View
-                  </a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="alert alert-info">No visits on record yet.</div>
-        {% endif %}
-      </div>
+<h3>Visits</h3>
+<a href="{{ url_for('add_visit', patient_id=patient.id) }}">Add Visit</a>
+<ul>
+    {% for v in patient.visits %}
+        <li>
+            <a href="{{ url_for('visit_detail', visit_id=v.id) }}">{{ v.date }}</a> - {{ v.notes[:50] }}
+        </li>
+    {% else %}
+        <li>No visits yet.</li>
+    {% endfor %}
+</ul>
 
-      <!-- Attachments Tab -->
-      <div class="tab-pane fade" id="attachments" role="tabpanel" aria-labelledby="attachments-tab">
-        {% if attachments and attachments|length > 0 %}
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Date Uploaded</th>
-                <th>File</th>
-                <th>Uploaded By</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for att in attachments %}
-              <tr>
-                <td>{{ att.uploaded_at.strftime('%Y-%m-%d') }}</td>
-                <td>
-                  <a href="{{ url_for('download_attachment', attachment_id=att.id) }}" target="_blank">{{ att.filename }}</a>
-                </td>
-                <td>{{ att.uploader_name or "N/A" }}</td>
-                <td>
-                  <form method="POST" action="{{ url_for('delete_attachment', attachment_id=att.id) }}" style="display:inline;">
-                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this file?')">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </form>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="alert alert-info">No attachments for this patient.</div>
-        {% endif %}
-      </div>
-
-      <!-- Deleted Visits Tab Content -->
-      <div class="tab-pane fade" id="deleted-visits" role="tabpanel" aria-labelledby="deleted-visits-tab">
-        {% if deleted_visits and deleted_visits|length > 0 %}
-        <ul class="list-group mt-3">
-          {% for visit in deleted_visits %}
-          <li class="list-group-item d-flex justify-content-between align-items-start">
-            <div class="me-auto">
-              <strong>Visit on {{ visit.visit_date.strftime('%Y-%m-%d') if visit.visit_date else 'N/A' }}</strong>
-              <br>
-              <small class="text-muted">Deleted on {{ visit.deleted_at.strftime('%Y-%m-%d') if visit.deleted_at else 'Unknown' }}</small>
-              <p>{{ visit.visit_type or 'N/A' }}</p>
-            </div>
-            <form method="POST" action="{{ url_for('recover_visit', visit_id=visit.id) }}" class="ms-3">
-              <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Recover this visit?')">
-                <i class="bi bi-arrow-counterclockwise"></i> Recover
-              </button>
-            </form>
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <p class="mt-3">No deleted visits in the last 30 days.</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
+<h3>Attachments</h3>
+<form method="POST" action="{{ url_for('upload_attachment', patient_id=patient.id) }}" enctype="multipart/form-data">
+    <input type="file" name="file" required>
+    <button type="submit">Upload File</button>
+</form>
+<ul>
+    {% for a in patient.attachments %}
+        <li>
+            <a href="{{ url_for('get_attachment', filename=a.filename) }}">{{ a.filename }}</a>
+        </li>
+    {% else %}
+        <li>No files uploaded.</li>
+    {% endfor %}
+</ul>
 {% endblock %}

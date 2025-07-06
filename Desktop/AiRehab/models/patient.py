@@ -11,6 +11,5 @@ class Patient(db.Model):
     phone = db.Column(db.String(30), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    visits = db.relationship('Visit', backref='patient', lazy=True)
-    attachments = db.relationship('Attachment', backref='patient', lazy=True)
-
+    visits = db.relationship('Visit', backref='patient', lazy=True, cascade="all, delete-orphan")
+    attachments = db.relationship('Attachment', backref='patient', lazy=True, cascade="all, delete-orphan")

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Add Visit for {{ patient.first_name }} {{ patient.last_name }}</h2>
+<form method="POST">
+    Date: <input name="date" type="date" required><br>
+    Notes:<br>
+    <textarea name="notes" rows="6"></textarea><br>
+    <button type="submit">Add Visit</button>
+</form>
+{% endblock %}
