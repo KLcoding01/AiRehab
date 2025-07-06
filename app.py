@@ -1,12 +1,5 @@
-import flask
-print("==== FLASK VERSION IS:", flask.__version__, "====")
-print("==== FLASK MODULE FILE:", flask.__file__, "====")
-print("==== FLASK OBJECT DIR:", dir(flask.Flask), "====")
-
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
-from models.patient import db, Patient
-from models.visit import Visit
-from models.attachment import Attachment
+from models import db, Patient, Visit, Attachment  # Import from models package!
 from config import Config
 import os
 from datetime import datetime
@@ -14,7 +7,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
-
+        
 # --- Create DB (local testing) ---
 @app.before_request
 def create_tables():
