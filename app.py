@@ -25,6 +25,11 @@ def index():
     patients = Patient.query.all()
     return render_template('index.html', patients=patients)
 
+# --- Calendar Detail ---
+@app.route('/calendar')
+def calendar_view():
+    return render_template('calendar.html')
+    
 # --- Add Patient ---
 @app.route('/patients/add', methods=['GET', 'POST'])
 def add_patient():
