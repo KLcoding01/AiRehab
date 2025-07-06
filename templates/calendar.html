@@ -1,52 +1,51 @@
-<!-- templates/calendar.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AiRehab Calendar</title>
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
-    <style>
-        body { font-family: sans-serif; background: #f5f9ff; }
-        #calendar { max-width: 900px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #aaa2; }
-        h1 { margin-top: 32px; }
-    </style>
-</head>
-<body>
-    <h1 style="text-align:center; color:#2056c7;">🗓️ AiRehab Calendar</h1>
-    <div id="calendar"></div>
+{% extends "base.html" %}
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var calendarEl = document.getElementById('calendar');
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        selectable: true,
-        editable: true,
-        events: '/api/events',
-        dateClick: function(info) {
-          var title = prompt('Event Title:');
-          if (title) {
-            fetch('/api/events', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({
-                title: title,
-                start: info.dateStr + "T09:00:00",
-                end: info.dateStr + "T10:00:00"
-              })
-            })
-            .then(() => calendar.refetchEvents());
-          }
-        },
-        eventClick: function(info) {
-          if (confirm('Delete event \"' + info.event.title + '\"?')) {
-            fetch('/api/events/' + info.event.id, { method: 'DELETE' })
-              .then(() => calendar.refetchEvents());
-          }
-        }
-      });
-      calendar.render();
-    });
-    </script>
-</body>
-</html>
+{% block content %}
+<h2>Clinic Calendar</h2>
+<div id="calendar"></div>
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var calendarEl = document.getElementById('calendar');
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    selectable: true,
+    editable: true,
+    events: '/api/events',
+    dateClick: function(info) {
+      var title = prompt('Event Title:');
+      if (title) {
+        fetch('/api/events', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            title: title,
+            start: info.dateStr + "T09:00:00",
+            end: info.dateStr + "T10:00:00"
+          })
+        })
+        .then(() => calendar.refetchEvents());
+      }
+    },
+    eventClick: function(info) {
+      if (confirm('Delete event \"' + info.event.title + '\"?')) {
+        fetch('/api/events/' + info.event.id, { method: 'DELETE' })
+          .then(() => calendar.refetchEvents());
+      }
+    }
+  });
+  calendar.render();
+});
+</script>
+<style>
+  #calendar {
+    background: #fff;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #aaa2;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+</style>
+{% endblock %}
