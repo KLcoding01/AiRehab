@@ -1,3 +1,5 @@
+from flask_login import UserMixin
+
 class Therapist(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -10,19 +12,7 @@ class Therapist(db.Model, UserMixin):
     availability = db.Column(db.String(255))
     npi = db.Column(db.String(20))
     pt_license = db.Column(db.String(50))
-    is_admin = db.Column(db.Boolean, default=False)   # <<-- NEW FIELD
-
+    is_admin = db.Column(db.Boolean, default=False)
+    
     visits = db.relationship('Visit', back_populates='therapist')
 
-    # Flask-Login properties
-    @property
-    def is_active(self):
-        return True
-
-    @property
-    def is_authenticated(self):
-        return True
-
-    @property
-    def is_anonymous(self):
-        return False
