@@ -1,4 +1,5 @@
 from . import db
+from flask_login import UserMixin  
 
 class Therapist(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
