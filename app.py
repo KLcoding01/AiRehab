@@ -70,6 +70,7 @@ def parse_dob(dob_str):
 # ====== ROUTES ======
 
 @app.route('/')
+@app.route('/home')
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))

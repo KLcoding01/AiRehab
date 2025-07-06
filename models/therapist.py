@@ -13,8 +13,4 @@ class Therapist(db.Model):
     npi = db.Column(db.String(20))
     pt_license = db.Column(db.String(50))
 
-    visits = db.relationship("Visit", back_populates="therapist", cascade="all, delete-orphan")
-    schedule_events = db.relationship('ScheduleEvent', back_populates='therapist', cascade='all, delete-orphan')
-
-    def __repr__(self):
-        return f"<Therapist {self.first_name} {self.last_name}>"
+    visits = db.relationship('Visit', back_populates='therapist')
