@@ -48,4 +48,4 @@ def edit_event(event_id):
     event.therapist_id = data.get('therapist_id')
     event.description = data.get('description')
     db.session.commit()
-    return jsonify({'status': 'success'
+    return jsonify({'status': 'success'})
