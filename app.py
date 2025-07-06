@@ -3,11 +3,16 @@ from models import db, Patient, Visit, Attachment  # Import from models package!
 from config import Config
 import os
 from datetime import datetime
+from flask_migrate import Migrate
+from calendar_routes import calendar_bp
+app.register_blueprint(calendar_bp)
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
-        
+migrate = Migrate(app, db)
+
 # --- Create DB (local testing) ---
 @app.before_request
 def create_tables():
