@@ -6,7 +6,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: #f4f7fa;
+            background: linear-gradient(120deg, #e6f0fa 0%, #f4f7fa 100%);
+            min-height: 100vh;
         }
         .login-container {
             max-width: 400px;
@@ -21,18 +22,33 @@
         }
         .forgot-link {
             font-size: 0.98rem;
+            color: #2056c7;
+            text-decoration: none;
+        }
+        .forgot-link:hover {
+            text-decoration: underline;
+            color: #003580;
+        }
+        .login-logo {
+            display: block;
+            margin: 0 auto 1.5rem auto;
+            width: 54px;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/1048/1048959.png" alt="Logo" class="login-logo">
         <h2 class="mb-4 text-center">AI Rehab</h2>
         <form method="POST" autocomplete="off">
             <div class="mb-3">
                 <input name="username" class="form-control" placeholder="Username" required autofocus>
             </div>
-            <div class="mb-2">
-                <input name="password" type="password" class="form-control" placeholder="Password" required>
+            <div class="mb-2 position-relative">
+                <input name="password" id="password" type="password" class="form-control" placeholder="Password" required>
+                <button type="button" class="btn btn-sm btn-light position-absolute end-0 top-0 mt-2 me-2" onclick="togglePassword()" style="z-index:10;">
+                  <span id="eye-icon" class="bi bi-eye"></span>
+                </button>
             </div>
             <div class="mb-2 text-end">
                 <a href="{{ url_for('forgot_password') }}" class="forgot-link">Forgot password?</a>
@@ -51,5 +67,20 @@
           {% endif %}
         {% endwith %}
     </div>
+    <!-- Bootstrap Icons CDN for eye icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script>
+      function togglePassword() {
+        const pw = document.getElementById('password');
+        const icon = document.getElementById('eye-icon');
+        if (pw.type === 'password') {
+          pw.type = 'text';
+          icon.className = 'bi bi-eye-slash';
+        } else {
+          pw.type = 'password';
+          icon.className = 'bi bi-eye';
+        }
+      }
+    </script>
 </body>
 </html>

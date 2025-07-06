@@ -96,7 +96,10 @@ def logout():
     return redirect(url_for('login'))
 
 # --- Forgot-password, reset-password, register, dashboard routes ---
-
+@app.route('/forgot-password')
+def forgot_password():
+    return render_template('forgot_password.html')
+    
 # --- Create DB (local testing) ---
 @app.before_request
 def create_tables():
