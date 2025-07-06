@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 import os
 from datetime import datetime
+from openai import OpenAI
 from flask_migrate import Migrate
 from calendar_routes import calendar_bp
 
