@@ -5,7 +5,7 @@ class Visit(db.Model):
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     notes = db.Column(db.Text)
-
     therapist_id = db.Column(db.Integer, db.ForeignKey('therapist.id'))
-    therapist = db.relationship('Therapist', back_populates='visits')
+
     patient = db.relationship('Patient', back_populates='visits')
+    therapist = db.relationship('Therapist', back_populates='visits')

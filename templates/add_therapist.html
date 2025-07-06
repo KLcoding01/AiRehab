@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Therapist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Add Therapist Account</h2>
+    <form method="POST">
+        <div class="mb-3"><input name="username" class="form-control" placeholder="Username" required></div>
+        <div class="mb-3"><input name="password" type="password" class="form-control" placeholder="Password" required></div>
+        <div class="mb-3"><input name="first_name" class="form-control" placeholder="First Name"></div>
+        <div class="mb-3"><input name="last_name" class="form-control" placeholder="Last Name"></div>
+        <div class="mb-3"><input name="credentials" class="form-control" placeholder="Credentials"></div>
+        <div class="mb-3"><input name="email" class="form-control" placeholder="Email"></div>
+        <div class="mb-3"><input name="phone" class="form-control" placeholder="Phone"></div>
+        <div class="mb-3"><input name="pt_license" class="form-control" placeholder="PT License"></div>
+        <div class="mb-3"><input name="npi" class="form-control" placeholder="NPI"></div>
+        <div class="mb-3"><input name="availability" class="form-control" placeholder="Availability"></div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" name="is_admin" id="is_admin">
+            <label class="form-check-label" for="is_admin">Is Admin?</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Therapist</button>
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mt-3">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+</div>
+</body>
+</html>
