@@ -86,10 +86,10 @@ def forgot_password():
     return render_template('forgot_password.html')
    # ----- ROUTES -----
 
-@app.route('/base')
-@login_required
-def dashboard():
-    return render_template('base.html')
+@app.route('/home')
+def home():
+    return redirect(url_for('dashboard'))
+    
 #---- Calendar ----
 
 @app.route('/calendar')
