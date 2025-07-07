@@ -9,8 +9,11 @@ from openai import OpenAI
 from flask_migrate import Migrate
 from calendar_routes import calendar_bp
 
+
 app = Flask(__name__)
 app.config.from_object(Config)
+DB_PATH = '/var/data/yourdatabase.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
 db.init_app(app)
 migrate = Migrate(app, db)
 app.register_blueprint(calendar_bp)
@@ -102,6 +105,59 @@ def dashboard():
 @login_required
 def calendar_view():
     return render_template('calendar.html')
+    
+@app.route('/api/events', methods=['GET'])
+def get_events():
+    therapist_id = request.args.get('therapist_id')
+    query = CalendarEvent.query
+    if therapist_id:
+        query = query.filter_by(therapist_id=therapist_id)
+    events = query.all()
+    return jsonify([
+        {
+            'id': e.id,
+            'title': e.title,
+            'start': e.start.isoformat(),
+            'end': e.end.isoformat(),
+            'extendedProps': {
+                'therapist_id': e.therapist_id,
+                'patient_id': e.patient_id
+            }
+        } for e in events
+    ])
+
+@app.route('/api/events', methods=['POST'])
+def create_event():
+    data = request.json
+    event = CalendarEvent(
+        title=data['title'],
+        start=datetime.fromisoformat(data['start']),
+        end=datetime.fromisoformat(data['end']),
+        therapist_id=data['therapist_id'],
+        patient_id=data['patient_id']
+    )
+    db.session.add(event)
+    db.session.commit()
+    return jsonify({'id': event.id}), 201
+
+@app.route('/api/events/<int:event_id>', methods=['PUT'])
+def update_event(event_id):
+    data = request.json
+    event = CalendarEvent.query.get_or_404(event_id)
+    event.title = data['title']
+    event.start = datetime.fromisoformat(data['start'])
+    event.end = datetime.fromisoformat(data['end'])
+    event.therapist_id = data['therapist_id']
+    event.patient_id = data['patient_id']
+    db.session.commit()
+    return jsonify({'message': 'Event updated'})
+
+@app.route('/api/events/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    event = CalendarEvent.query.get_or_404(event_id)
+    db.session.delete(event)
+    db.session.commit()
+    return jsonify({'message': 'Event deleted'})
     
 #---- Visit Detail, Form, Add Visit ----
 
