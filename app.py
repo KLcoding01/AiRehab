@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify, abort
 from models import db, Patient, Visit, Attachment, CalendarEvent, Therapist
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,7 +8,6 @@ from datetime import datetime
 from openai import OpenAI
 from flask_migrate import Migrate
 from calendar_routes import calendar_bp
-
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -216,6 +215,8 @@ def visit_detail(visit_id):
     visit = Visit.query.get_or_404(visit_id)
     return render_template('visit_detail.html', visit=visit)
 
+# ------------------ API ------------------
+
 @app.route('/api/patient_list', methods=['GET'])
 def get_patients():
     patients = Patient.query.all()
@@ -225,7 +226,7 @@ def get_patients():
     ])
     
 @app.route('/api/patients', methods=['POST'])
-def add_patient():
+def api_add_patient():  # <-- RENAMED to avoid collision!
     data = request.json
     patient = Patient(first_name=data['first_name'], last_name=data['last_name'])
     db.session.add(patient)
@@ -286,7 +287,7 @@ def get_therapists():
     ])
     
 @app.route('/api/therapists', methods=['POST'])
-def add_therapist():
+def api_add_therapist():  # <-- RENAMED to avoid collision!
     data = request.json
     therapist = Therapist(first_name=data['first_name'], last_name=data['last_name'])
     db.session.add(therapist)
@@ -324,7 +325,6 @@ def get_attachment(filename):
 @app.before_first_request
 def create_tables():
     db.create_all()
-
 
 if __name__ == '__main__':
     app.run(debug=True)
