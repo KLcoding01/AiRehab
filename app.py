@@ -63,9 +63,9 @@ def parse_dob(dob_str):
 
 # ----- ROUTES -----
 
-@app.route('/dashboard')
+@app.route('/base')
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('base.html')
     
 # --- Login, Forgot Password ----
 @app.route('/login', methods=['GET', 'POST'])
