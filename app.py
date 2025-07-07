@@ -60,12 +60,6 @@ def parse_dob(dob_str):
         except ValueError:
             continue
     return None
-
-# ----- ROUTES -----
-
-@app.route('/base')
-def dashboard():
-    return render_template('base.html')
     
 # --- Login, Forgot Password ----
 @app.route('/login', methods=['GET', 'POST'])
@@ -90,7 +84,12 @@ def logout():
 @app.route('/forgot-password')
 def forgot_password():
     return render_template('forgot_password.html')
-    
+   # ----- ROUTES -----
+
+@app.route('/base')
+@login_required
+def dashboard():
+    return render_template('base.html')
 #---- Calendar ----
 
 @app.route('/calendar')
