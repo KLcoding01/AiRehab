@@ -85,10 +85,10 @@ def logout():
 def forgot_password():
     return render_template('forgot_password.html')
    # ----- ROUTES -----
-
-@app.route('/home')
-def home():
-    return redirect(url_for('dashboard'))
+   
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
     
 #---- Calendar ----
 
