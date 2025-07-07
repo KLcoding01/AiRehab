@@ -1,78 +1,163 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AiRehab EMR</title>
+    <title>Clinic Scheduler</title>
     <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
     <style>
-        body {
-            display: flex;
-            min-height: 100vh;
+        html, body {
+            height: 100%;
+            width: 100%;
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: #f7f9fc;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .topnav {
+            width: 100vw;
+            min-width: 0;
+            background: #2271ff;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            padding: 0 32px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            box-shadow: 0 2px 8px rgba(30,60,200,0.04);
+            z-index: 100;
+        }
+        .topnav .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-right: 42px;
+        }
+        .topnav a {
+            color: #fff;
+            text-decoration: none;
+            margin-right: 36px;
+            font-size: 1.07rem;
+            font-weight: 600;
+            transition: opacity 0.16s;
+        }
+        .topnav a.active, .topnav a:hover {
+            opacity: 0.8;
+            border-bottom: 3px solid #fff;
+        }
+        .topnav a:last-child {
+            margin-left: auto;
+            margin-right: 0;
+        }
+        .main-area {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            height: calc(100vh - 60px);
+            width: 100vw;
+            overflow: hidden;
         }
         nav.sidebar {
-            min-width: 180px;
-            max-width: 220px;
-            background: #eef3ff;
-            padding: 40px 0 0 0;
+            min-width: 220px;
+            max-width: 260px;
+            background: #f2f5ff;
+            border-right: 1.5px solid #e0e7fb;
+            padding: 36px 0 0 0;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            box-shadow: 2px 0 6px #eee;
-            border-right: 1px solid #dde4f1;
+            box-shadow: 2px 0 8px #f0f3fa;
+            height: 100%;
         }
         nav.sidebar a {
-            padding: 14px 24px;
+            padding: 15px 32px;
             color: #2056c7;
             font-weight: 500;
             text-decoration: none;
             width: 100%;
-            display: block;
-            border-radius: 0 20px 20px 0;
-            transition: background 0.18s;
+            display: flex;
+            align-items: center;
+            font-size: 1.11rem;
+            border-radius: 0 22px 22px 0;
+            margin-bottom: 2px;
+            transition: background 0.18s, color 0.16s;
         }
-        nav.sidebar a:hover, nav.sidebar a.active {
-            background: #dde8ff;
+        nav.sidebar a.active, nav.sidebar a:hover {
+            background: #e3edff;
+            color: #174399;
         }
         main {
             flex: 1;
-            padding: 36px 40px 40px 40px;
-            background: #fff;
+            padding: 60px 52px 52px 52px;
+            min-width: 0;
+            background: transparent;
+            height: 100%;
         }
         header {
             margin-bottom: 24px;
         }
+        .flashes {
+            max-width: 520px;
+            margin: 0 auto 28px auto;
+            padding: 22px 32px;
+            background: #fff;
+            border-radius: 13px;
+            box-shadow: 0 3px 18px rgba(33, 100, 255, 0.09);
+            color: #234;
+            font-size: 1.12rem;
+        }
+        @media (max-width: 900px) {
+            .main-area { flex-direction: column; }
+            nav.sidebar { flex-direction: row; height: auto; min-width: 100vw; max-width: 100vw; }
+            main { padding: 18px 3vw 32px 3vw; }
+        }
     </style>
 </head>
 <body>
-    <nav class="sidebar">
-        <h2 style="padding-left:24px;margin-top:0;">
-            <a href="{{ url_for('index') }}" style="color:#2056c7;text-decoration:none;">AiRehab EMR</a>
-        </h2>
-        <a href="{{ url_for('index') }}">🏠 Home</a>
-        <a href="{{ url_for('calendar_view') }}">📅 Calendar</a>
-        <a href="{{ url_for('patient_list') }}">🧑‍🤝‍🧑 Patients</a>
-        <a href="{{ url_for('pt_builder') }}">📝 PT Builder</a>
-        {% if current_user.is_authenticated and current_user.is_admin %}
-            <a href="{{ url_for('add_therapist') }}">👤 Add Therapist</a>
-        {% endif %}
-        <hr style="width:90%;margin:20px auto 10px auto;">
+    <div class="topnav">
+        <span class="brand">Clinic Scheduler</span>
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('patient_list') }}">My Patients</a>
+        <a href="{{ url_for('add_therapist') }}">Therapists</a>
+        <a href="#">Physicians</a>
+        <a href="#">Insurance</a>
+        <a href="#">Billing</a>
+        <a href="{{ url_for('pt_builder') }}">PT Builder</a>
         {% if current_user.is_authenticated %}
-            <a href="{{ url_for('logout') }}">🚪 Logout</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
         {% endif %}
-    </nav>
-    <main>
-        <header>
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <ul>
-                    {% for msg in messages %}
-                        <li>{{ msg }}</li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
-            {% endwith %}
-        </header>
-        {% block content %}{% endblock %}
-    </main>
+    </div>
+    <div class="main-area">
+        <nav class="sidebar">
+            <a href="{{ url_for('index') }}">🏠 Dashboard</a>
+            <a href="{{ url_for('patient_list') }}">🧑‍🤝‍🧑 My Patients</a>
+            <a href="{{ url_for('add_therapist') }}">🏅 Therapists</a>
+            <a href="#">🏅 Physicians</a>
+            <a href="#">🏛️ Insurance</a>
+            <a href="#">💲 Billing</a>
+            <a href="{{ url_for('pt_builder') }}">📝 PT Builder</a>
+        </nav>
+        <main>
+            <header>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flashes">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </header>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 </body>
 </html>
