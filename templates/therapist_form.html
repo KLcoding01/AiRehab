@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Therapist' if therapist else 'Add Therapist' }} | Clinic Scheduler{% endblock %}
+{% block content %}
+<div style="max-width:500px;margin:48px auto;padding:32px 30px 28px 30px;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(34,100,200,0.10);">
+  <h2 style="color:#2056c7;margin-bottom:26px;font-weight:700;">{{ 'Edit Therapist' if therapist else 'Add Therapist' }}</h2>
+  <form method="post" autocomplete="off">
+    {% if not therapist %}
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Username</label>
+      <input type="text" name="username" required style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Password</label>
+      <input type="password" name="password" required style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    {% endif %}
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">First Name</label>
+      <input type="text" name="first_name" value="{{ therapist.first_name if therapist else '' }}" required style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Last Name</label>
+      <input type="text" name="last_name" value="{{ therapist.last_name if therapist else '' }}" required style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Credentials</label>
+      <input type="text" name="credentials" value="{{ therapist.credentials if therapist else '' }}" style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">NPI</label>
+      <input type="text" name="npi" value="{{ therapist.npi if therapist else '' }}" style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">PT License</label>
+      <input type="text" name="pt_license" value="{{ therapist.pt_license if therapist else '' }}" style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Phone</label>
+      <input type="text" name="phone" value="{{ therapist.phone if therapist else '' }}" style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:22px;">
+      <label style="font-weight:500;">Email</label>
+      <input type="email" name="email" value="{{ therapist.email if therapist else '' }}" required style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <button type="submit" style="background:#2271ff;color:#fff;padding:10px 30px;border:none;border-radius:7px;font-size:1rem;font-weight:600;box-shadow:0 2px 7px #dde4f1;">{{ 'Update' if therapist else 'Add Therapist' }}</button>
+    <a href="{{ url_for('therapist_list') }}" style="color:#333;margin-left:20px;text-decoration:none;">Cancel</a>
+  </form>
+</div>
+{% endblock %}

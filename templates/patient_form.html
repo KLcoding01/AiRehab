@@ -1,12 +1,31 @@
 {% extends "base.html" %}
+{% block title %}{{ 'Edit Patient' if patient else 'Add Patient' }} | Clinic Scheduler{% endblock %}
 {% block content %}
-<h2>Add Patient</h2>
-<form method="POST">
-    First Name: <input name="first_name" required><br>
-    Last Name: <input name="last_name" required><br>
-    Date of Birth: <input name="date_of_birth" type="date"><br>
-    Email: <input name="email" type="email"><br>
-    Phone: <input name="phone"><br>
-    <button type="submit">Add</button>
-</form>
+<div style="max-width:500px;margin:48px auto;padding:32px 30px 28px 30px;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(34,100,200,0.10);">
+  <h2 style="color:#2056c7;margin-bottom:26px;font-weight:700;">{{ 'Edit Patient' if patient else 'Add Patient' }}</h2>
+  <form method="post" autocomplete="off">
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">First Name</label>
+      <input type="text" name="first_name" value="{{ patient.first_name if patient else '' }}" required style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Last Name</label>
+      <input type="text" name="last_name" value="{{ patient.last_name if patient else '' }}" required style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Date of Birth</label>
+      <input type="date" name="dob" value="{{ patient.dob if patient and patient.dob else '' }}" style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-weight:500;">Phone</label>
+      <input type="text" name="phone" value="{{ patient.phone if patient else '' }}" style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <div style="margin-bottom:22px;">
+      <label style="font-weight:500;">Email</label>
+      <input type="email" name="email" value="{{ patient.email if patient else '' }}" style="width:100%;padding:9px;margin-top:6px;border-radius:6px;border:1px solid #dde4f1;">
+    </div>
+    <button type="submit" style="background:#2271ff;color:#fff;padding:10px 30px;border:none;border-radius:7px;font-size:1rem;font-weight:600;box-shadow:0 2px 7px #dde4f1;">{{ 'Update' if patient else 'Add Patient' }}</button>
+    <a href="{{ url_for('patient_list') }}" style="color:#333;margin-left:20px;text-decoration:none;">Cancel</a>
+  </form>
+</div>
 {% endblock %}

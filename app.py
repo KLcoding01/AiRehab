@@ -35,7 +35,6 @@ def load_user(user_id):
 
 # ------- CREATE TABLES & ADMIN IF NONE -------
 with app.app_context():
-    db.create_all()
     # --- Admin user creation ---
     if not Therapist.query.filter_by(username="Kelvin").first():
         hashed_pw = generate_password_hash("Thanh123!")
@@ -162,26 +161,36 @@ def delete_event(event_id):
     
 #---- Visit Detail, Form, Add Visit ----
 
-@app.route('/patients/add', methods=['GET', 'POST'])
-@login_required
+@app.route('/add_patient', methods=['GET', 'POST'])
 def add_patient():
     if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        dob = request.form.get('date_of_birth')
-        email = request.form.get('email')
-        phone = request.form.get('phone')
-        patient = Patient(
-            first_name=first_name,
-            last_name=last_name,
-            date_of_birth=datetime.strptime(dob, '%Y-%m-%d') if dob else None,
-            email=email, phone=phone
+        p = Patient(
+            first_name=request.form['first_name'],
+            last_name=request.form['last_name'],
+            dob=request.form.get('dob'),
+            phone=request.form.get('phone', ''),
+            email=request.form.get('email', '')
         )
-        db.session.add(patient)
+        db.session.add(p)
         db.session.commit()
         flash('Patient added!')
-        return redirect(url_for('index'))
-    return render_template('patient_form.html')
+        return redirect(url_for('patient_list'))
+    return render_template('patient_form.html', patient=None)
+
+@app.route('/edit_patient/<int:patient_id>', methods=['GET', 'POST'])
+def edit_patient(patient_id):
+    p = Patient.query.get_or_404(patient_id)
+    if request.method == 'POST':
+        p.first_name = request.form['first_name']
+        p.last_name = request.form['last_name']
+        p.dob = request.form.get('dob')
+        p.phone = request.form.get('phone', '')
+        p.email = request.form.get('email', '')
+        db.session.commit()
+        flash('Patient updated!')
+        return redirect(url_for('patient_list'))
+    return render_template('patient_form.html', patient=p)
+
 
 @app.route('/patients')
 @login_required
@@ -232,12 +241,31 @@ def api_add_patient():  # <-- RENAMED to avoid collision!
     db.session.add(patient)
     db.session.commit()
     return jsonify({'id': patient.id}), 201
-    
-# ------- Therapist Detail, Add, Remove -------
+
+# ---- API Endpoints ----
+
+@app.route('/api/therapist_list', methods=['GET'])
+def get_therapists():
+    therapists = Therapist.query.all()
+    return jsonify([
+        {'id': t.id, 'first_name': t.first_name, 'last_name': t.last_name}
+        for t in therapists
+    ])
+
+@app.route('/api/therapists', methods=['POST'])
+def api_add_therapist():
+    data = request.json
+    therapist = Therapist(first_name=data['first_name'], last_name=data['last_name'])
+    db.session.add(therapist)
+    db.session.commit()
+    return jsonify({'id': therapist.id}), 201
+
+
+# ---- Admin-Only Add Therapist (Full fields) ----
 
 @app.route('/admin/add_therapist', methods=['GET', 'POST'])
 @login_required
-def add_therapist():
+def admin_add_therapist():
     if not current_user.is_admin:
         abort(403)  # Forbidden
 
@@ -252,10 +280,11 @@ def add_therapist():
         pt_license = request.form.get('pt_license')
         npi = request.form.get('npi')
         availability = request.form.get('availability')
+        is_admin = bool(request.form.get('is_admin'))
 
         if Therapist.query.filter_by(username=username).first():
             flash("Username already exists.", "danger")
-            return render_template('add_therapist.html')
+            return render_template('therapist_form.html', form_title="Add Therapist (Admin)", therapist=None)
 
         hashed_pw = generate_password_hash(password)
         new_therapist = Therapist(
@@ -269,30 +298,68 @@ def add_therapist():
             pt_license=pt_license,
             npi=npi,
             availability=availability,
-            is_admin=bool(request.form.get('is_admin'))
+            is_admin=is_admin
         )
         db.session.add(new_therapist)
         db.session.commit()
         flash("New therapist created!", "success")
-        return redirect(url_for('patient_list'))
+        return redirect(url_for('therapist_list'))
 
-    return render_template('add_therapist.html')
-    
-@app.route('/api/therapist_list', methods=['GET'])
-def get_therapists():
+    return render_template('therapist_form.html', form_title="Add Therapist (Admin)", therapist=None)
+
+# ---- Classic List/Add/Edit/Delete ----
+
+@app.route('/therapist_list')
+@login_required
+def therapist_list():
     therapists = Therapist.query.all()
-    return jsonify([
-        {'id': t.id, 'first_name': t.first_name, 'last_name': t.last_name}
-        for t in therapists
-    ])
-    
-@app.route('/api/therapists', methods=['POST'])
-def api_add_therapist():
-    data = request.json
-    therapist = Therapist(first_name=data['first_name'], last_name=data['last_name'])
-    db.session.add(therapist)
+    return render_template('therapist_list.html', therapists=therapists)
+
+@app.route('/therapist_add', methods=['GET', 'POST'])
+@login_required
+def therapist_add():
+    # If you want to restrict to admin, add:
+    # if not current_user.is_admin: abort(403)
+    if request.method == 'POST':
+        t = Therapist(
+            first_name=request.form['first_name'],
+            last_name=request.form['last_name'],
+            credentials=request.form.get('credentials', ''),
+            phone=request.form.get('phone', ''),
+            email=request.form.get('email', '')
+        )
+        db.session.add(t)
+        db.session.commit()
+        flash('Therapist added!')
+        return redirect(url_for('therapist_list'))
+    return render_template('therapist_form.html', form_title="Add Therapist", therapist=None)
+
+@app.route('/therapist_edit/<int:therapist_id>', methods=['GET', 'POST'])
+@login_required
+def therapist_edit(therapist_id):
+    t = Therapist.query.get_or_404(therapist_id)
+    if request.method == 'POST':
+        t.first_name = request.form['first_name']
+        t.last_name = request.form['last_name']
+        t.credentials = request.form.get('credentials', '')
+        t.phone = request.form.get('phone', '')
+        t.email = request.form.get('email', '')
+        t.pt_license = request.form.get('pt_license', '')
+        t.npi = request.form.get('npi', '')
+        t.availability = request.form.get('availability', '')
+        db.session.commit()
+        flash('Therapist updated!')
+        return redirect(url_for('therapist_list'))
+    return render_template('therapist_form.html', form_title="Edit Therapist", therapist=t)
+
+@app.route('/therapist_delete/<int:therapist_id>', methods=['POST'])
+@login_required
+def therapist_delete(therapist_id):
+    t = Therapist.query.get_or_404(therapist_id)
+    db.session.delete(t)
     db.session.commit()
-    return jsonify({'id': therapist.id}), 201
+    flash('Therapist deleted!')
+    return redirect(url_for('therapist_list'))
 
 #---PT BUILDER ----
 @app.route('/pt_builder')
@@ -320,11 +387,6 @@ def upload_attachment(patient_id):
 @login_required
 def get_attachment(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-# ---- INIT/DB CREATE ----
-@app.before_request
-def create_tables():
-    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)
