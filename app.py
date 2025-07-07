@@ -12,8 +12,10 @@ from calendar_routes import calendar_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
-DB_PATH = '/var/data/yourdatabase.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
+if os.environ.get('DATABASE_URL'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+elif os.environ.get('RENDER'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////var/data/airehab.db'
 db.init_app(app)
 migrate = Migrate(app, db)
 app.register_blueprint(calendar_bp)
@@ -213,6 +215,22 @@ def add_visit(patient_id):
 def visit_detail(visit_id):
     visit = Visit.query.get_or_404(visit_id)
     return render_template('visit_detail.html', visit=visit)
+
+@app.route('/api/patient_list', methods=['GET'])
+def get_patients():
+    patients = Patient.query.all()
+    return jsonify([
+        {'id': p.id, 'first_name': p.first_name, 'last_name': p.last_name}
+        for p in patients
+    ])
+    
+@app.route('/api/patients', methods=['POST'])
+def add_patient():
+    data = request.json
+    patient = Patient(first_name=data['first_name'], last_name=data['last_name'])
+    db.session.add(patient)
+    db.session.commit()
+    return jsonify({'id': patient.id}), 201
     
 # ------- Therapist Detail, Add, Remove -------
 
@@ -259,6 +277,22 @@ def add_therapist():
 
     return render_template('add_therapist.html')
     
+@app.route('/api/therapist_list', methods=['GET'])
+def get_therapists():
+    therapists = Therapist.query.all()
+    return jsonify([
+        {'id': t.id, 'first_name': t.first_name, 'last_name': t.last_name}
+        for t in therapists
+    ])
+    
+@app.route('/api/therapists', methods=['POST'])
+def add_therapist():
+    data = request.json
+    therapist = Therapist(first_name=data['first_name'], last_name=data['last_name'])
+    db.session.add(therapist)
+    db.session.commit()
+    return jsonify({'id': therapist.id}), 201
+
 #---PT BUILDER ----
 @app.route('/pt_builder')
 @login_required
@@ -285,6 +319,12 @@ def upload_attachment(patient_id):
 @login_required
 def get_attachment(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# ---- INIT/DB CREATE ----
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
