@@ -31,7 +31,7 @@
       letter-spacing: 1px;
     }
     /* Modal styles */
-    #event-modal {
+    #event-modal, #add-patient-modal, #add-therapist-modal {
       display: none;
       position: fixed;
       top: 20%;
@@ -46,19 +46,38 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       border-radius: 8px;
     }
-    #event-modal label {
+    #event-modal label, #add-patient-modal label, #add-therapist-modal label {
       display: block;
       margin-bottom: 8px;
     }
-    #event-modal input, #event-modal select {
+    #event-modal input, #event-modal select,
+    #add-patient-modal input, #add-therapist-modal input {
       width: 100%;
       padding: 6px 8px;
       margin-top: 4px;
       margin-bottom: 12px;
       box-sizing: border-box;
     }
-    #event-modal button {
+    #event-modal button, #add-patient-modal button, #add-therapist-modal button {
       margin-right: 10px;
+    }
+    .add-btn-row {
+      text-align: right;
+      margin: 16px 0 4px 0;
+    }
+    .add-btn-row button {
+      margin-left: 10px;
+      font-size: 0.96em;
+      padding: 4px 18px;
+      border-radius: 5px;
+      background: #2176ff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .add-btn-row button:hover {
+      background: #145ac2;
     }
   </style>
 {% endblock %}
@@ -70,6 +89,11 @@
 <select id="therapist-select">
   <option value="">-- All Therapists --</option>
 </select>
+
+<div class="add-btn-row">
+  <button id="show-add-patient-btn" type="button">Add Patient</button>
+  <button id="show-add-therapist-btn" type="button">Add Therapist</button>
+</div>
 
 <div id="calendar" tabindex="0"></div>
 
@@ -104,6 +128,29 @@
   </form>
 </div>
 
+<!-- Modal for add patient -->
+<div id="add-patient-modal">
+  <h3>Add Patient</h3>
+  <form id="add-patient-form">
+    <label>First Name: <input type="text" name="first_name" required></label>
+    <label>Last Name: <input type="text" name="last_name" required></label>
+    <button type="submit">Save</button>
+    <button type="button" id="cancel-add-patient">Cancel</button>
+  </form>
+</div>
+
+<!-- Modal for add therapist -->
+<div id="add-therapist-modal">
+  <h3>Add Therapist</h3>
+  <form id="add-therapist-form">
+    <label>First Name: <input type="text" name="first_name" required></label>
+    <label>Last Name: <input type="text" name="last_name" required></label>
+    <!-- Add more fields as needed -->
+    <button type="submit">Save</button>
+    <button type="button" id="cancel-add-therapist">Cancel</button>
+  </form>
+</div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
@@ -121,24 +168,14 @@
       },
       events: function(fetchInfo, successCallback, failureCallback) {
         const therapistId = therapistSelect.value;
-        console.log("Fetching events for therapist ID:", therapistId);
-
-        // If no therapist selected, fetch all events (no query param)
         let url = '/api/events';
-        if (therapistId) {
-          url += '?therapist_id=' + therapistId;
-        }
-
+        if (therapistId) url += '?therapist_id=' + therapistId;
         fetch(url)
           .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
           })
           .then(data => {
-            console.log("Fetched events:", data);
-            // Map events properly and ensure start/end are ISO strings
             const events = data.map(ev => ({
               id: ev.id,
               title: ev.title,
@@ -166,26 +203,42 @@
 
     calendar.render();
 
-    // Load therapist list for dropdowns
-    fetch('/api/therapist_list')
-      .then(res => res.json())
-      .then(data => {
-        data.forEach(t => {
-          const option = document.createElement('option');
-          option.value = t.id;
-          option.textContent = `${t.first_name} ${t.last_name}`;
-          therapistSelect.appendChild(option);
+    // --- Therapist dropdown for calendar filter and modal ---
+    function loadTherapistList() {
+      fetch('/api/therapist_list')
+        .then(res => res.json())
+        .then(data => {
+          // Main filter
+          therapistSelect.innerHTML = '<option value="">-- All Therapists --</option>';
+          data.forEach(t => {
+            const option = document.createElement('option');
+            option.value = t.id;
+            option.textContent = `${t.first_name} ${t.last_name}`;
+            therapistSelect.appendChild(option);
+          });
+          copyTherapistsToModal(data);
         });
-        copyTherapistsToModal();
-      });
+    }
+    loadTherapistList();
 
-    // Load patient list for modal dropdown
+    function copyTherapistsToModal(therapistData) {
+      const modalTherapistSelect = document.getElementById('event-therapist');
+      modalTherapistSelect.innerHTML = '';
+      therapistData.forEach(opt => {
+        const newOpt = document.createElement('option');
+        newOpt.value = opt.id;
+        newOpt.textContent = `${opt.first_name} ${opt.last_name}`;
+        modalTherapistSelect.appendChild(newOpt);
+      });
+    }
+
+    // --- Patient dropdown for event modal ---
     function loadPatientList() {
       fetch('/api/patient_list')
         .then(res => res.json())
         .then(data => {
           const patientSelect = document.getElementById('event-patient');
-          patientSelect.innerHTML = ''; // clear old options
+          patientSelect.innerHTML = '';
           data.forEach(p => {
             const option = document.createElement('option');
             option.value = p.id;
@@ -196,22 +249,10 @@
     }
     loadPatientList();
 
-    // When therapist changes, reload events
+    // When therapist filter changes, reload events
     therapistSelect.addEventListener('change', function() {
       calendar.refetchEvents();
     });
-
-    // Copy therapists from dropdown to modal select
-    function copyTherapistsToModal() {
-      const modalTherapistSelect = document.getElementById('event-therapist');
-      modalTherapistSelect.innerHTML = '';
-      Array.from(therapistSelect.options).forEach(opt => {
-        const newOpt = document.createElement('option');
-        newOpt.value = opt.value;
-        newOpt.textContent = opt.textContent;
-        modalTherapistSelect.appendChild(newOpt);
-      });
-    }
 
     // Modal handling
     const modal = document.getElementById('event-modal');
@@ -228,7 +269,6 @@
       document.getElementById('event-end').value = eventData.end ? eventData.end.slice(0,16) : '';
       document.getElementById('event-therapist').value = (eventData.extendedProps && eventData.extendedProps.therapist_id) || therapistSelect.value || '';
       document.getElementById('event-patient').value = (eventData.extendedProps && eventData.extendedProps.patient_id) || '';
-
       deleteBtn.style.display = isNew ? 'none' : 'inline';
       modal.style.display = 'block';
     }
@@ -239,12 +279,8 @@
 
     function openEditEventModal(event) {
       if (!event.extendedProps) event.extendedProps = {};
-      if (!event.extendedProps.therapist_id) {
-        event.extendedProps.therapist_id = therapistSelect.value;
-      }
-      if (!event.extendedProps.patient_id) {
-        event.extendedProps.patient_id = '';
-      }
+      if (!event.extendedProps.therapist_id) event.extendedProps.therapist_id = therapistSelect.value;
+      if (!event.extendedProps.patient_id) event.extendedProps.patient_id = '';
       showEventModal(event);
     }
 
@@ -256,19 +292,15 @@
       const end = document.getElementById('event-end').value;
       const therapist_id = document.getElementById('event-therapist').value;
       const patient_id = document.getElementById('event-patient').value;
-
       if (!patient_id) {
         alert('Please select a patient.');
         return;
       }
-
       function toLocalISO(dateStr) {
         const date = new Date(dateStr);
-        const tzOffset = date.getTimezoneOffset() * 60000; // offset in ms
-        return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1); // remove trailing 'Z' for local time
+        const tzOffset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1);
       }
-
-      // usage in payload
       const payload = {
         title: title,
         start: toLocalISO(start),
@@ -276,21 +308,18 @@
         therapist_id: parseInt(therapist_id),
         patient_id: parseInt(patient_id)
       };
-
       let url = '/api/events';
       let method = 'POST';
       if (id) {
         url += '/' + id;
         method = 'PUT';
       }
-
       try {
         const res = await fetch(url, {
           method: method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         if (res.ok) {
           modal.style.display = 'none';
           calendar.refetchEvents();
@@ -308,7 +337,6 @@
       const id = document.getElementById('event-id').value;
       if (!id) return;
       if (!confirm('Delete this event?')) return;
-
       try {
         const res = await fetch('/api/events/' + id, { method: 'DELETE' });
         if (res.ok) {
@@ -328,8 +356,72 @@
       modal.style.display = 'none';
     };
 
-    // Expose loadPatientList globally
+    // ----------- Add Patient Modal Logic -----------
+    const showAddPatientBtn = document.getElementById('show-add-patient-btn');
+    const addPatientModal = document.getElementById('add-patient-modal');
+    const addPatientForm = document.getElementById('add-patient-form');
+    const cancelAddPatient = document.getElementById('cancel-add-patient');
+    showAddPatientBtn.onclick = function() {
+      addPatientModal.style.display = 'block';
+    };
+    cancelAddPatient.onclick = function() {
+      addPatientModal.style.display = 'none';
+      addPatientForm.reset();
+    };
+    addPatientForm.onsubmit = async function(e) {
+      e.preventDefault();
+      const first_name = this.first_name.value;
+      const last_name = this.last_name.value;
+      const res = await fetch('/api/patients', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({first_name, last_name})
+      });
+      if (res.ok) {
+        addPatientModal.style.display = 'none';
+        addPatientForm.reset();
+        loadPatientList(); // refresh dropdown!
+        alert('Patient added!');
+      } else {
+        alert('Error adding patient');
+      }
+    };
+
+    // ----------- Add Therapist Modal Logic -----------
+    const showAddTherapistBtn = document.getElementById('show-add-therapist-btn');
+    const addTherapistModal = document.getElementById('add-therapist-modal');
+    const addTherapistForm = document.getElementById('add-therapist-form');
+    const cancelAddTherapist = document.getElementById('cancel-add-therapist');
+    showAddTherapistBtn.onclick = function() {
+      addTherapistModal.style.display = 'block';
+    };
+    cancelAddTherapist.onclick = function() {
+      addTherapistModal.style.display = 'none';
+      addTherapistForm.reset();
+    };
+    addTherapistForm.onsubmit = async function(e) {
+      e.preventDefault();
+      const first_name = this.first_name.value;
+      const last_name = this.last_name.value;
+      // Expand for more fields as needed!
+      const res = await fetch('/api/therapists', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({first_name, last_name})
+      });
+      if (res.ok) {
+        addTherapistModal.style.display = 'none';
+        addTherapistForm.reset();
+        loadTherapistList(); // refresh dropdown!
+        alert('Therapist added!');
+      } else {
+        alert('Error adding therapist');
+      }
+    };
+
+    // For other scripts to refresh dropdowns:
     window.loadPatientList = loadPatientList;
+    window.loadTherapistList = loadTherapistList;
   });
 </script>
 {% endblock %}
