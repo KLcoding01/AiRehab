@@ -274,7 +274,7 @@ def add_therapist():
         db.session.add(new_therapist)
         db.session.commit()
         flash("New therapist created!", "success")
-        return redirect(url_for('patient_list'))  # Or some admin page
+        return redirect(url_for('patient_list'))
 
     return render_template('add_therapist.html')
     
@@ -287,7 +287,7 @@ def get_therapists():
     ])
     
 @app.route('/api/therapists', methods=['POST'])
-def api_add_therapist():  # <-- RENAMED to avoid collision!
+def api_add_therapist():
     data = request.json
     therapist = Therapist(first_name=data['first_name'], last_name=data['last_name'])
     db.session.add(therapist)

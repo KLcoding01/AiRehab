@@ -208,7 +208,7 @@
       fetch('/api/therapist_list')
         .then(res => res.json())
         .then(data => {
-          // Main filter
+          console.log('Therapist list:', data);   // <--- Add this line!
           therapistSelect.innerHTML = '<option value="">-- All Therapists --</option>';
           data.forEach(t => {
             const option = document.createElement('option');
