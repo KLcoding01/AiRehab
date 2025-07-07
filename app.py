@@ -84,8 +84,14 @@ def logout():
 @app.route('/forgot-password')
 def forgot_password():
     return render_template('forgot_password.html')
-   # ----- ROUTES -----
+    
+# ----- ROUTES -----
    
+@app.route('/')
+def index():
+    return redirect(url_for('dashboard'))
+    # or: return render_template('index.html')
+    
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
