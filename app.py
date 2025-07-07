@@ -322,7 +322,7 @@ def get_attachment(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # ---- INIT/DB CREATE ----
-@app.before_first_request
+@app.before_request
 def create_tables():
     db.create_all()
 
